@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stopwatch</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            background-color: #2a2a2a;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 300px;
+            transition: all 0.3s ease;
+        }
+
+        #display {
+            font-size: 54px;
+            color: #ff6600;
+            display: block;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        button {
+            width: 120px;
+            padding: 12px;
+            font-size: 18px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-weight: bold;
+            outline: none;
+        }
+
+        #lapBtn {
+            background-color: #444;
+            color: white;
+        }
+
+        #lapBtn:hover {
+            background-color: #555;
+            transform: translateY(-2px);
+        }
+
+        #startBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #startBtn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+
+        #startBtn.stop {
+            background-color: #f44336;
+        }
+
+        #startBtn.stop:hover {
+            background-color: #da190b;
+        }
+
+        #lapList {
+            list-style-type: none;
+            padding: 0;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        #lapList li {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #bbb;
+            font-size: 16px;
+            padding: 8px;
+            background-color: #333;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        #lapList li:hover {
+            background-color: #444;
+        }
+
+        /* Scrollbar Styles */
+        #lapList::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #lapList::-webkit-scrollbar-track {
+            background: #333;
+        }
+
+        #lapList::-webkit-scrollbar-thumb {
+            background-color: #666;
+            border-radius: 20px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .running #display {
+            animation: pulse 1s infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <label id="display">00:00:00</label>
+        <div class="buttons">
+            <button id="lapBtn">Lap</button>
+            <button id="startBtn">Start</button>
+        </div>
+        <ul id="lapList"></ul>
+    </div>
+
+    <script>
+        let startTime;
+        let elapsedTime = 0;
+        let timerInterval;
+        let isRunning = false;
+        let lapCount = 0;
+
+        const display = document.getElementById('display');
+        const startBtn = document.getElementById('startBtn');
+        const lapBtn = document.getElementById('lapBtn');
+        const lapList = document.getElementById('lapList');
+        const container = document.querySelector('.container');
+
+        function formatTime(ms) {
+            const minutes = Math.floor(ms / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            const centiseconds = Math.floor((ms % 1000) / 10);
+            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${centiseconds.toString().padStart(2, '0')}`;
+        }
+
+        function updateDisplay() {
+            display.textContent = formatTime(elapsedTime);
+        }
+
+        function startStop() {
+            if (isRunning) {
+                clearInterval(timerInterval);
+                startBtn.textContent = 'Start';
+                startBtn.classList.remove('stop');
+                lapBtn.textContent = 'Reset';
+                container.classList.remove('running');
+            } else {
+                startTime = Date.now() - elapsedTime;
+                timerInterval = setInterval(() => {
+                    elapsedTime = Date.now() - startTime;
+                    updateDisplay();
+                }, 10);
+                startBtn.textContent = 'Stop';
+                startBtn.classList.add('stop');
+                lapBtn.textContent = 'Lap';
+                container.classList.add('running');
+            }
+            isRunning = !isRunning;
+        }
+
+        function lapReset() {
+            if (isRunning) {
+                lapCount++;
+                const lapItem = document.createElement('li');
+                lapItem.innerHTML = `<span>Lap ${lapCount}</span><span>${formatTime(elapsedTime)}</span>`;
+                lapList.insertBefore(lapItem, lapList.firstChild);
+            } else {
+                elapsedTime = 0;
+                updateDisplay();
+                lapCount = 0;
+                lapList.innerHTML = '';
+                lapBtn.textContent = 'Lap';
+            }
+        }
+
+        startBtn.addEventListener('click', startStop);
+        lapBtn.addEventListener('click', lapReset);
+
+        updateDisplay();
+    </script>
+</body>
+
+</html>
